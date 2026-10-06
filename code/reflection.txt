@@ -1,4 +1,14 @@
-Write your reflection here.
+In this assignment, I was able to continue learning how to build data pipelines which allow for
+us as programmers to not repeat code. For example, we could import modules such as clean and payroll
+into other files to get working functions without having to completely rewrite them. Regarding
+imports, one issue I ran into was importing clean into join. I had not realized since it was
+a relative path, it needed a .clean instead of just writing clean. Whereas for importing payroll 
+into payroll_app.py, we could just use import payroll. Therefore, I want to work on getting more
+familiar with the paths being used so that I can make sure I'm coding my imports correctly.
+This assignment also furthered my knowledge of using merge, lambda, and apply. In join.py, we used
+the merge method on the employees dataframe. This helped me get more familiar with arguments
+such as 'how' and 'on' and how to utilize them. In clean.py, we used the apply method which allowed
+us to apply the function parse_hours on add_hours_worked.
 
 See reflection.md for what makes a good reflection — be specific, use the
 terminology from this assignment (lineage, grain, element function, Series.apply,

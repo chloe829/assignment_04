@@ -38,3 +38,61 @@ Test it: pytest tests/test_pipeline.py -k app
 #
 # What the page does NOT do: arithmetic on rows, cleaning, merging. If you find
 # yourself writing a loop or an apply here, that logic belongs in the package.
+
+import streamlit as st
+
+from payroll import build_payroll, load_employees, load_timesheet, payroll_export
+
+
+def main() -> None:
+    """Render the weekly payroll page and its downloadable provider export."""
+    st.title("Salt City Coffee — Weekly Payroll")
+    st.write(
+        "Upload this week's timesheet to calculate payroll and review the results."
+    )
+
+    employees = load_employees()
+    uploaded_timesheet = st.file_uploader(
+        "Upload the week's timesheet CSV", type="csv", key="timesheet"
+    )
+
+    if uploaded_timesheet is None:
+        return
+
+    timesheet = load_timesheet(uploaded_timesheet)
+    payroll = build_payroll(timesheet, employees)
+    payroll_date = str(payroll["payroll_date"].iloc[0])
+
+    st.subheader(f"Pay period: {payroll_date}")
+    employees_paid = len(payroll[payroll["pay_type"] != "unmatched"])
+    total_hours = payroll["hours_worked"].sum()
+    total_gross_pay = payroll["gross_pay"].sum()
+    overtime_weeks = len(payroll[payroll["pay_type"] == "overtime"])
+
+    metrics = st.columns(4)
+    metrics[0].metric("Employees paid", employees_paid)
+    metrics[1].metric("Total hours", f"{total_hours:g}")
+    metrics[2].metric("Total gross pay", f"${total_gross_pay:,.2f}")
+    metrics[3].metric("Overtime weeks", overtime_weeks)
+
+    unmatched = payroll[payroll["pay_type"] == "unmatched"]
+    if len(unmatched):
+        employee_ids = ", ".join(unmatched["employee_id"].astype(str).unique())
+        st.warning(f"Unmatched employee ID(s): {employee_ids}")
+    else:
+        st.success("All timesheet employees matched the roster.")
+
+    st.dataframe(payroll)
+
+    export_csv = payroll_export(payroll).to_csv(index=False)
+    st.download_button(
+        "Download payroll CSV",
+        data=export_csv,
+        file_name=f"payroll_{payroll_date}.csv",
+        mime="text/csv",
+        key="download",
+    )
+
+
+if __name__ == "__main__":
+    main()
