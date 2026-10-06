@@ -48,4 +48,3 @@ def merge_employees(timesheet: pd.DataFrame, employees: pd.DataFrame) -> pd.Data
 
     merged = timesheet.merge(employees, how='left', on='employee_id')
     return merged
-
